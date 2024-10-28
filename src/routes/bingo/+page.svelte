@@ -2,56 +2,119 @@
 	import { Input } from '$lib/components/ui/input';
 	import DynamicGrid from '$lib/components/ui/dynamic-grid/DynamicGrid.svelte';
 	import Label from '$lib/components/ui/label/label.svelte';
+	import Button from '$lib/components/ui/button/button.svelte';
+	import EditableListItem from '$lib/components/ui/editable-list/EditableListItem.svelte';
 	import * as Resizable from '$lib/components/ui/resizable';
+	import ThemeToggle from '$lib/components/ui/theme-toggle/ThemeToggle.svelte';
 
-	let rows = 1;
-	let cols = 1;
+	interface ListItem {
+		value: string;
+		editable: boolean;
+	}
 
-	const items = [
-		"Hello world1",
-		"Hello world2",
-		"Hello world3",
-		"Hello world4",
-		"Hello world5",
-		"Hello world6",
-		"Hello world7",
-		"Hello world8",
-		"Hello world9",
-		"Hello world10",
-	];
+	const MAX_SIZE = 7;
+	const MIN_SIZE = 2;
+
+	let rows = $state(1);
+	let cols = $state(1);
+	let taskName = $state('');
+
+	let items = $state<ListItem[]>([
+		{ value: 'Hello world1', editable: false },
+		{ value: 'Hello world2', editable: false },
+		{ value: 'Hello world3', editable: false },
+		{ value: 'Hello world4', editable: false },
+		{ value: 'Hello world5', editable: false },
+		{ value: 'Hello world6', editable: false },
+		{ value: 'Hello world7', editable: false },
+		{ value: 'Hello world8', editable: false },
+		{ value: 'Hello world9', editable: false },
+		{ value: 'Hello world10', editable: false }
+	]);
+
+	function handleAddNewTask(value: string) {
+		const trimmedTask = value.trim()
+		trimmedTask !== "" ? addElement(value) : undefined
+	}
+
+	// crud operations
+	function addElement(value: string) {
+		items = [...items, { value: value, editable: false }];
+	}
+
+	function editElement(value: string, index: number) {
+		items = [...items.map((it, i) => (i === index ? { ...it, value: value } : it))];
+	}
+
+	function deleteElement(index: number) {
+		items = [...items.filter((_, i) => i !== index)]
+	}
 </script>
 
-<div class="h-full">
-	<nav class="p-4">
-		<div class="container mx-auto">
-			<span>Bingo</span>
+<div class="min-h-full flex flex-col">
+	<nav class="border-b p-4">
+		<div class="container mx-auto flex justify-between">
+			<span class="text-2xl font-bold">Bingo</span>
+			<ThemeToggle />
 		</div>
 	</nav>
-	<Resizable.PaneGroup direction="horizontal">
+	<Resizable.PaneGroup direction="horizontal" class="flex-1 container">
 		<Resizable.Pane>
-			<div class="flex-1 border-r-4">
+			<div class="border-r-4 pt-4">
 				<div class="p-4">
-					<div>
+					<div class="mb-4">
 						<Label for="_grid-rows">Rows:</Label>
-						<Input type="number" id="_grid-rows" bind:value={rows} class="max-w-xs" />
+						<Input
+							type="number"
+							id="_grid-rows"
+							max={MAX_SIZE}
+							min={MIN_SIZE}
+							bind:value={rows}
+							class="max-w-xs"
+						/>
 					</div>
 					<div>
 						<Label for="_grid-cols">Columns:</Label>
-						<Input type="number" id="_grid-cols" bind:value={cols} class="max-w-xs" />
+						<Input
+							type="number"
+							id="_grid-cols"
+							max={MAX_SIZE}
+							min={MIN_SIZE}
+							bind:value={cols}
+							class="max-w-xs"
+						/>
 					</div>
 				</div>
 				<hr />
-				<ul>
-					{#each items as item}
-						<li>{item}</li>
+				<div class="flex gap-4 p-4">
+					<Input class="flex-1" placeholder="Task name here" bind:value={taskName} />
+					<Button on:click={_ => handleAddNewTask(taskName)}>Add one more task</Button>
+				</div>
+				<ul class="p-4">
+					{#each items as item, index}
+						<!-- <li class="mb-2">{item}</li> -->
+						<EditableListItem
+							on:itemUpdated={(e) => {
+								const updatedText = e.detail;
+								editElement(updatedText, index);
+							}}
+							on:itemDeleted={(e) => {
+								const itemToDelete = e.detail;
+								deleteElement(itemToDelete)
+							}}
+							{index}
+							text={item.value}
+							isEditable={false}
+						></EditableListItem>
 					{/each}
 				</ul>
 			</div>
 		</Resizable.Pane>
 		<Resizable.Handle />
 		<Resizable.Pane>
-			<div class="container mx-auto">
-                <DynamicGrid rows={rows} columns={cols} items={items} />
-			</div></Resizable.Pane>
+			<div class="container mx-auto pt-4">
+				<DynamicGrid {rows} columns={cols} items={items.map((it) => it.value)} />
+			</div></Resizable.Pane
+		>
 	</Resizable.PaneGroup>
 </div>
