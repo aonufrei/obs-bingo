@@ -6,6 +6,7 @@
 	import EditableListItem from '$lib/components/ui/editable-list/EditableListItem.svelte';
 	import * as Resizable from '$lib/components/ui/resizable';
 	import ThemeToggle from '$lib/components/ui/theme-toggle/ThemeToggle.svelte';
+	import { shuffle } from '$lib/utils';
 
 	interface ListItem {
 		value: string;
@@ -17,6 +18,7 @@
 
 	let rows = $state(1);
 	let cols = $state(1);
+	let seed = $state(Math.floor(Math.random() * 100000))
 	let taskName = $state('');
 
 	let items = $state<ListItem[]>([
@@ -32,9 +34,13 @@
 		{ value: 'Hello world10', editable: false }
 	]);
 
+	function generateSeed(): number {
+		return Math.floor(Math.random() * 100000)
+	}
+
 	function handleAddNewTask(value: string) {
-		const trimmedTask = value.trim()
-		trimmedTask !== "" ? addElement(value) : undefined
+		const trimmedTask = value.trim();
+		trimmedTask !== '' ? addElement(value) : undefined;
 	}
 
 	// crud operations
@@ -47,18 +53,18 @@
 	}
 
 	function deleteElement(index: number) {
-		items = [...items.filter((_, i) => i !== index)]
+		items = [...items.filter((_, i) => i !== index)];
 	}
 </script>
 
-<div class="min-h-full flex flex-col">
+<div class="flex min-h-full flex-col">
 	<nav class="border-b p-4">
 		<div class="container mx-auto flex justify-between">
 			<span class="text-2xl font-bold">Bingo</span>
 			<ThemeToggle />
 		</div>
 	</nav>
-	<Resizable.PaneGroup direction="horizontal" class="flex-1 container">
+	<Resizable.PaneGroup direction="horizontal" class="container flex-1">
 		<Resizable.Pane>
 			<div class="border-r-4 pt-4">
 				<div class="p-4">
@@ -88,11 +94,10 @@
 				<hr />
 				<div class="flex gap-4 p-4">
 					<Input class="flex-1" placeholder="Task name here" bind:value={taskName} />
-					<Button on:click={_ => handleAddNewTask(taskName)}>Add one more task</Button>
+					<Button on:click={(_) => handleAddNewTask(taskName)}>Add one more task</Button>
 				</div>
 				<ul class="p-4">
 					{#each items as item, index}
-						<!-- <li class="mb-2">{item}</li> -->
 						<EditableListItem
 							on:itemUpdated={(e) => {
 								const updatedText = e.detail;
@@ -100,7 +105,7 @@
 							}}
 							on:itemDeleted={(e) => {
 								const itemToDelete = e.detail;
-								deleteElement(itemToDelete)
+								deleteElement(itemToDelete);
 							}}
 							{index}
 							text={item.value}
@@ -113,7 +118,11 @@
 		<Resizable.Handle />
 		<Resizable.Pane>
 			<div class="container mx-auto pt-4">
-				<DynamicGrid {rows} columns={cols} items={items.map((it) => it.value)} />
+				<div class="flex gap-2 justify-between mb-4">
+					<Input class="flex-1" bind:value={seed} />
+					<Button on:click={_ => seed = generateSeed()}>Randomize</Button>
+				</div>
+				<DynamicGrid {rows} columns={cols} items={shuffle(items, seed).map((it) => it.value)} />
 			</div></Resizable.Pane
 		>
 	</Resizable.PaneGroup>

@@ -63,10 +63,29 @@ export const flyAndScale = (
 
 export function toggleTheme() {
 	if (document.documentElement.classList.contains('dark')) {
-	  document.documentElement.classList.remove('dark')
-	  localStorage.setItem('theme', 'light')
+		document.documentElement.classList.remove('dark')
+		localStorage.setItem('theme', 'light')
 	} else {
-	  document.documentElement.classList.add('dark')
-	  localStorage.setItem('theme', 'dark')
+		document.documentElement.classList.add('dark')
+		localStorage.setItem('theme', 'dark')
 	}
-  }
+}
+
+export function shuffle<T>(array: T[], seed: number): T[] {
+	const arrayCopy = [...array]
+	let currentIndex = arrayCopy.length,
+		temporaryValue,
+		randomIndex;
+	let random = function () {
+		var x = Math.sin(seed++) * 100000;
+		return x - Math.floor(x);
+	};
+	while (0 !== currentIndex) {
+		randomIndex = Math.floor(random() * currentIndex);
+		currentIndex -= 1;
+		temporaryValue = arrayCopy[currentIndex];
+		arrayCopy[currentIndex] = arrayCopy[randomIndex];
+		arrayCopy[randomIndex] = temporaryValue;
+	}
+	return arrayCopy;
+}
