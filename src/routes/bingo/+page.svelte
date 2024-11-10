@@ -6,7 +6,7 @@
 	import EditableListItem from '$lib/components/ui/editable-list/EditableListItem.svelte';
 	import * as Resizable from '$lib/components/ui/resizable';
 	import Header from '$lib/components/ui/header/Header.svelte';
-	import { type BingoState, type ListItem, shuffle } from '$lib/utils';
+	import { type BingoState, type ListItem, shuffle, withMissingItems } from '$lib/utils';
 	import { type User, db } from '$lib/firebase';
 	import {
 		type DocumentData,
@@ -172,11 +172,21 @@
 	<Resizable.Handle />
 	<Resizable.Pane>
 		<div class="container mx-auto pt-4">
-			<div class="mb-4 flex justify-between gap-2">
-				<Input class="flex-1" bind:value={seed} />
+			<div class="mb-4 flex items-center justify-between gap-2">
+				<div>
+					<Label for="_random-seed">Random Seed:</Label>
+					<Input id="_random-seed" class="flex-1" bind:value={seed} />
+				</div>
 				<Button on:click={(_) => (seed = generateSeed())}>Randomize</Button>
 			</div>
-			<DynamicGrid {rows} columns={cols} items={shuffle(data, seed).map((it) => it.value)} />
+			<DynamicGrid
+				{rows}
+				columns={cols}
+				items={withMissingItems(rows * cols, shuffle(data, seed), () => ({
+					id: '',
+					value: ''
+				}))}
+			/>
 		</div></Resizable.Pane
 	>
 </Resizable.PaneGroup>

@@ -1,7 +1,7 @@
 <script lang="ts">
 	import DynamicGrid from '$lib/components/ui/dynamic-grid/DynamicGrid.svelte';
 	import { db } from '$lib/firebase';
-	import { type BingoState, shuffle } from '$lib/utils';
+	import { type BingoState, shuffle, withMissingItems } from '$lib/utils';
 	import {
 		type DocumentSnapshot,
 		type DocumentData,
@@ -10,7 +10,6 @@
 		onSnapshot
 	} from 'firebase/firestore';
 	import { onMount } from 'svelte';
-	import { page } from '$app/stores';
 	import { derived } from 'svelte/store';
 	import { bingoIdStore } from '$lib/stores/bingoStore';
 
@@ -43,9 +42,13 @@
 
 {#if bingoState}
 	<DynamicGrid
+		interactive={true}
 		rows={bingoState?.rows}
 		columns={bingoState?.cols}
-		items={shuffle(bingoState?.data || [], bingoState?.seed || 0).map((it) => it.value)}
+		
+		items={withMissingItems(bingoState?.rows * bingoState?.cols, shuffle(bingoState?.data || [], bingoState?.seed || 0), () => ({
+			value: ''
+		}))}
 	/>
 {:else if loadingBoard}
 	<h1>Loading...</h1>

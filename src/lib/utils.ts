@@ -7,9 +7,15 @@ export function cn(...inputs: ClassValue[]) {
 	return twMerge(clsx(inputs));
 }
 
+export enum UserType {
+	CREATOR = "CREATOR",
+	GUEST = "GUEST",
+}
+
 export interface ListItem {
-	value: string;
-	editable: boolean;
+	value: string
+	editable?: boolean
+	userTypeSelected?: UserType
 }
 
 export interface BingoState {
@@ -84,6 +90,11 @@ export function toggleTheme() {
 		document.documentElement.classList.add('dark')
 		localStorage.setItem('theme', 'dark')
 	}
+}
+
+export function withMissingItems<T>(totalAmount: number, array: T[], createEmpty: () => T): T[] {
+	if (array.length >= totalAmount) return array.slice(0, totalAmount)
+	return [...array, ...new Array(totalAmount - array.length).fill(createEmpty())]
 }
 
 export function shuffle<T>(array: T[], seed: number): T[] {
