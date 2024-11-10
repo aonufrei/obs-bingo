@@ -22,7 +22,7 @@
 	}
 </script>
 
-<div class="align-stretch mb-2 flex justify-start gap-2">
+<div class="align-stretch mb-2 flex justify-start items-center gap-2">
 	<Button variant="outline" size="icon" on:click={(_) => (isEditable = !isEditable)}
 		><PenIcon /></Button
 	>

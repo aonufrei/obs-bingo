@@ -1,0 +1,1 @@
+export const BINGO_ID_PARAM = 'bingoId';

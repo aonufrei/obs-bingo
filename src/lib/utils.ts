@@ -7,6 +7,21 @@ export function cn(...inputs: ClassValue[]) {
 	return twMerge(clsx(inputs));
 }
 
+export interface ListItem {
+	value: string;
+	editable: boolean;
+}
+
+export interface BingoState {
+	rows: number
+	cols: number
+	seed: number
+	data: ListItem[]
+	owner: string
+	user1Token?: string
+	user2Token?: string
+}
+
 type FlyAndScaleParams = {
 	y?: number;
 	x?: number;
