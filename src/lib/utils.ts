@@ -13,6 +13,8 @@ export enum UserType {
 }
 
 export interface ListItem {
+	id?: string
+	doneBy?: string
 	value: string
 	editable?: boolean
 	userTypeSelected?: UserType

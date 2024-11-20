@@ -1,4 +1,6 @@
 <script lang="ts">
+	import { Clipboard, Tv, LoaderCircle } from 'lucide-svelte';
+
 	import { Input } from '$lib/components/ui/input';
 	import DynamicGrid from '$lib/components/ui/dynamic-grid/DynamicGrid.svelte';
 	import Label from '$lib/components/ui/label/label.svelte';
@@ -23,7 +25,8 @@
 	import { goto } from '$app/navigation';
 	import { bingoIdStore } from '$lib/stores/bingoStore';
 	import { derived } from 'svelte/store';
-	import { BINGO_ID_PARAM } from '$lib/constants';
+	import { BINGO_ID_PARAM, WEBSITE_HOST } from '$lib/constants';
+	import { nanoid } from 'nanoid';
 
 	const MAX_SIZE = 7;
 	const MIN_SIZE = 2;
@@ -36,6 +39,7 @@
 	let user = $state<User | undefined>(undefined);
 	let isLogged = $state(false);
 	let bingoRef: DocumentReference<DocumentData, DocumentData> | undefined = $state(undefined);
+	let saving = $state(false);
 
 	let data = $state<ListItem[]>([]);
 
@@ -74,6 +78,10 @@
 		taskName = '';
 	}
 
+	function copyToClipboard(value: string) {
+		navigator.clipboard.writeText(value);
+	}
+
 	async function revertChanges() {
 		if (bingoRef) await loadBingo(bingoRef);
 	}
@@ -85,6 +93,10 @@
 	}
 
 	async function saveBingo() {
+		saving = true;
+		data.forEach((it) => {
+			if (!it.id) it.id = nanoid();
+		});
 		const bingoState: BingoState = {
 			cols: cols,
 			rows: rows,
@@ -94,13 +106,14 @@
 		};
 		if (bingoRef) {
 			console.log('Update');
-			setDoc(bingoRef, bingoState);
+			await setDoc(bingoRef, bingoState);
 		} else {
 			bingoRef = await addDoc(collection(db, 'bingos'), bingoState);
 			console.log('Create new');
 			console.log(bingoRef);
 			updateSearchParams(BINGO_ID_PARAM, bingoRef?.id);
 		}
+		saving = false;
 	}
 
 	// crud operations
@@ -180,6 +193,7 @@
 				<Button on:click={(_) => (seed = generateSeed())}>Randomize</Button>
 			</div>
 			<DynamicGrid
+				moreStyles={'aspect-square'}
 				{rows}
 				columns={cols}
 				items={withMissingItems(rows * cols, shuffle(data, seed), () => ({
@@ -192,8 +206,35 @@
 </Resizable.PaneGroup>
 
 <nav class="border-t p-4">
-	<div class="container mx-auto flex items-center justify-end gap-2">
-		<Button on:click={revertChanges} variant="destructive">Revert Changes</Button>
-		<Button on:click={saveBingo}>Save</Button>
+	<div class="container mx-auto flex items-center justify-between gap-2">
+		<div class="flex gap-4">
+			<Button
+				variant="secondary"
+				class="flex gap-2"
+				on:click={(_) => copyToClipboard(`${WEBSITE_HOST}/bingo/match?bingoId=${$bingoId}`)}
+			>
+				<Clipboard />
+				<span>Copy Link</span>
+			</Button>
+			<Button
+				variant="secondary"
+				class="flex gap-2"
+				on:click={(_) =>
+					copyToClipboard(`${WEBSITE_HOST}/bingo/match?bingoId=${$bingoId}&preview=true`)}
+			>
+				<Tv />
+				<span>Copy OBS Widget Link</span>
+			</Button>
+		</div>
+		<div class="flex gap-4">
+			<Button on:click={revertChanges} variant="destructive">Revert Changes</Button>
+			<Button on:click={saveBingo} disabled={saving}>
+				{#if saving}
+					<LoaderCircle class="mr-2 h-4 w-4 animate-spin" />
+				{:else}
+					Save
+				{/if}</Button
+			>
+		</div>
 	</div>
 </nav>
