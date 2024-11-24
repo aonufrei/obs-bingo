@@ -44,10 +44,8 @@
 	let data = $state<ListItem[]>([]);
 
 	subscribe((value) => {
-		console.log(value);
 		user = value.user;
 		isLogged = value.isLoggedIn;
-		console.log('owner', user?.uid);
 	});
 
 	async function loadBingo(ref: DocumentReference<DocumentData, DocumentData>) {
@@ -64,8 +62,10 @@
 	}
 
 	onMount(async () => {
-		bingoRef = doc(db, 'bingos', $bingoId);
-		if (bingoRef) await loadBingo(bingoRef);
+		if ($bingoId) {
+			bingoRef = doc(db, 'bingos', $bingoId);
+			if (bingoRef) await loadBingo(bingoRef);
+		}
 	});
 
 	function generateSeed(): number {
@@ -132,47 +132,55 @@
 
 <Header {isLogged} {user} />
 <Resizable.PaneGroup direction="horizontal" class="container flex-1">
-	<Resizable.Pane>
-		<div class="border-r-4 pt-4">
-			<div class="p-4">
-				<div class="mb-4">
-					<Label for="_grid-rows">Rows:</Label>
-					<Input
-						type="number"
-						id="_grid-rows"
-						max={MAX_SIZE}
-						min={MIN_SIZE}
-						bind:value={rows}
-						class="max-w-xs"
-					/>
-				</div>
-				<div>
-					<Label for="_grid-cols">Columns:</Label>
-					<Input
-						type="number"
-						id="_grid-cols"
-						max={MAX_SIZE}
-						min={MIN_SIZE}
-						bind:value={cols}
-						class="max-w-xs"
-					/>
-				</div>
+	<Resizable.Pane class="flex flex-col">
+		<div class="p-4">
+			<div class="mb-4">
+				<Label for="_grid-rows">Rows:</Label>
+				<Input
+					type="number"
+					id="_grid-rows"
+					autocomplete="off"
+					max={MAX_SIZE}
+					min={MIN_SIZE}
+					bind:value={rows}
+					class="max-w-xs"
+				/>
 			</div>
-			<hr />
-			<div class="flex gap-4 p-4">
-				<Input class="flex-1" placeholder="Task name here" bind:value={taskName} />
-				<Button on:click={(_) => handleAddNewTask(taskName)}>Add one more task</Button>
+			<div>
+				<Label for="_grid-cols">Columns:</Label>
+				<Input
+					type="number"
+					id="_grid-cols"
+					autocomplete="off"
+					max={MAX_SIZE}
+					min={MIN_SIZE}
+					bind:value={cols}
+					class="max-w-xs"
+				/>
 			</div>
+		</div>
+		<hr />
+		<form
+			autocomplete="off"
+			class="flex gap-4 p-4"
+			onsubmit={(e: SubmitEvent) => {
+				e.preventDefault();
+				handleAddNewTask(taskName);
+				taskName = '';
+			}}
+		>
+			<Input class="flex-1" placeholder="Task name here" bind:value={taskName} />
+			<Button type="submit">Add one more task</Button>
+		</form>
+		<div class="flex-1 overflow-y-scroll">
 			<ul class="p-4">
 				{#each data as item, index}
 					<EditableListItem
-						on:itemUpdated={(e) => {
-							const updatedText = e.detail;
-							editElement(updatedText, index);
+						onItemUpdated={(index, value) => {
+							editElement(value, index);
 						}}
-						on:itemDeleted={(e) => {
-							const itemToDelete = e.detail;
-							deleteElement(itemToDelete);
+						onItemDeleted={(index) => {
+							deleteElement(index);
 						}}
 						{index}
 						text={item.value}
@@ -183,17 +191,29 @@
 		</div>
 	</Resizable.Pane>
 	<Resizable.Handle />
-	<Resizable.Pane>
-		<div class="container mx-auto pt-4">
-			<div class="mb-4 flex items-center justify-between gap-2">
-				<div>
-					<Label for="_random-seed">Random Seed:</Label>
-					<Input id="_random-seed" class="flex-1" bind:value={seed} />
+	<Resizable.Pane class="flex flex-col">
+		<div class="container flex flex-1 flex-col py-4">
+			<div class="mb-4 flex flex-col gap-2">
+				<Label for="_random-seed">Random Seed:</Label>
+				<div class="flex gap-2">
+					<Input
+						id="_random-seed"
+						type="number"
+						autocomplete="off"
+						class="flex-1"
+						bind:value={seed}
+					/>
+					<Button
+						on:click={(_) => {
+							console.log('clicked');
+							seed = generateSeed();
+							console.log(seed);
+						}}>Randomize</Button
+					>
 				</div>
-				<Button on:click={(_) => (seed = generateSeed())}>Randomize</Button>
 			</div>
 			<DynamicGrid
-				moreStyles={'aspect-square'}
+				moreStyles={'flex-1'}
 				{rows}
 				columns={cols}
 				items={withMissingItems(rows * cols, shuffle(data, seed), () => ({

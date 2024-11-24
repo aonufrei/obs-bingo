@@ -8,6 +8,6 @@
 	$bingoIdStore = $page.url.searchParams.get(BINGO_ID_PARAM) || null;
 </script>
 
-<div class="flex min-h-full flex-col">
+<div class="h-dvh flex flex-col">
 	{@render children()}
 </div>
