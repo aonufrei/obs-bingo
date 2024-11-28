@@ -205,9 +205,7 @@
 					/>
 					<Button
 						on:click={(_) => {
-							console.log('clicked');
 							seed = generateSeed();
-							console.log(seed);
 						}}>Randomize</Button
 					>
 				</div>
