@@ -21,6 +21,7 @@ export interface ListItem {
 }
 
 export interface BingoState {
+	name?: string
 	rows: number
 	cols: number
 	seed: number

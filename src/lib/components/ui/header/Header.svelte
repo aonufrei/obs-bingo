@@ -12,7 +12,17 @@
 
 <nav class="border-b p-4">
 	<div class="container mx-auto flex items-center justify-between">
-		<span class="text-2xl font-bold">Bingo</span>
+		{#if isLogged && user !== undefined}
+			<div class="flex items-center gap-8">
+				<span class="text-2xl font-bold">Bingo</span>
+				<div class="flex items-center gap-4">
+					<a class="text-xl" href="/board">My Boards</a>
+				</div>
+			</div>
+		{:else}
+			<span class="text-2xl font-bold">Bingo</span>
+		{/if}
+
 		<div class="flex items-center gap-4">
 			<ThemeToggle />
 			{#if isLogged && user !== undefined}
@@ -23,7 +33,10 @@
 								<Avatar.Image src={user.photoURL} alt="Profile Image" />
 							</Avatar.Root>
 						</Popover.Trigger>
-						<Popover.Content><Button class="w-full" variant="destructive" on:click={logout}>Logout</Button></Popover.Content>
+						<Popover.Content
+							><Button class="w-full" variant="destructive" on:click={logout}>Logout</Button
+							></Popover.Content
+						>
 					</Popover.Root>
 				</div>
 			{:else}

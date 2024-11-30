@@ -32,6 +32,7 @@
 	const MIN_SIZE = 2;
 
 	let bingoId = derived(bingoIdStore, ($store) => $store || '', '');
+	let boardName = $state('');
 	let rows = $state(1);
 	let cols = $state(1);
 	let seed = $state(0);
@@ -52,6 +53,7 @@
 		const snapshot = await getDoc(ref);
 		if (snapshot.exists()) {
 			const bingoState = snapshot.data() as BingoState;
+			boardName = bingoState.name || "";
 			cols = bingoState.cols;
 			rows = bingoState.rows;
 			seed = bingoState.seed;
@@ -98,6 +100,7 @@
 			if (!it.id) it.id = nanoid();
 		});
 		const bingoState: BingoState = {
+			name: boardName,
 			cols: cols,
 			rows: rows,
 			seed: seed,
@@ -105,12 +108,9 @@
 			data: data
 		};
 		if (bingoRef) {
-			console.log('Update');
 			await setDoc(bingoRef, bingoState);
 		} else {
 			bingoRef = await addDoc(collection(db, 'bingos'), bingoState);
-			console.log('Create new');
-			console.log(bingoRef);
 			updateSearchParams(BINGO_ID_PARAM, bingoRef?.id);
 		}
 		saving = false;
@@ -134,6 +134,10 @@
 <Resizable.PaneGroup direction="horizontal" class="container flex-1">
 	<Resizable.Pane class="flex flex-col">
 		<div class="p-4">
+			<div class="mb-4">
+				<Label for="_grid-board-name">Board name:</Label>
+				<Input id="_grid-board-name" autocomplete="off" bind:value={boardName} class="max-w-xs" />
+			</div>
 			<div class="mb-4">
 				<Label for="_grid-rows">Rows:</Label>
 				<Input
