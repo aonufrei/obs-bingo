@@ -4,14 +4,17 @@ import { auth, signInWithPopup, provider, signOut, type User } from '$lib/fireba
 const authStore = writable<{
     isLoggedIn: boolean;
     user?: User;
+    initialized: boolean;
 }>({
     isLoggedIn: false,
+    initialized: false,
 });
 
 auth.onAuthStateChanged((firebaseUser) => {
     authStore.set({
         isLoggedIn: firebaseUser !== null,
         user: firebaseUser || undefined,
+        initialized: true,
     });
 });
 
@@ -21,6 +24,7 @@ async function login() {
         authStore.set({
             isLoggedIn: true,
             user: result.user,
+            initialized: true,
         });
     } catch (error) {
         console.error("Login failed: ", error);
@@ -32,6 +36,7 @@ async function logout() {
         await signOut(auth);
         authStore.set({
             isLoggedIn: false,
+            initialized: true,
         });
     } catch (error) {
         console.error("Logout failed: ", error);

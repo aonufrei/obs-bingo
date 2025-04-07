@@ -1,19 +1,24 @@
 <script lang="ts">
-	import { page } from '$app/stores';
-	import { bingoIdStore } from '$lib/stores/bingoStore';
-	import { BINGO_ID_PARAM } from '$lib/constants';
+	import { LoaderCircle } from 'lucide-svelte';
+	import Header from '$lib/components/ui/header/Header.svelte';
 	import { authStore } from '$lib/stores/authStore';
-	import LoginLayout from '$lib/components/ui/login-layout/LoginLayout.svelte';
 
 	let { children } = $props();
 
-	$bingoIdStore = $page.url.searchParams.get(BINGO_ID_PARAM) || null;
+	let isLogged = $derived($authStore.isLoggedIn);
+	let user = $derived($authStore.user);
+	$effect(() => {
+		if ($authStore.initialized && !isLogged) {
+			window.location.href = '/login';
+		}
+	});
 </script>
 
-{#if !$authStore.isLoggedIn}
-	<LoginLayout></LoginLayout>
-{:else}
-	<div class="flex h-dvh flex-col">
-		{@render children()}
+{#if !$authStore.initialized || !$authStore.isLoggedIn}
+	<div class="flex h-dvh flex-col items-center justify-center">
+		<LoaderCircle class="animate-spin" />
 	</div>
+{:else}
+	<Header {isLogged} {user} />
+	{@render children()}
 {/if}

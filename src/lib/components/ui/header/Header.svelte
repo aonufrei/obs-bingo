@@ -16,7 +16,7 @@
 			<div class="flex items-center gap-8">
 				<span class="text-2xl font-bold">Bingo</span>
 				<div class="flex items-center gap-4">
-					<a class="text-xl" href="/board">My Boards</a>
+					<a class="text-xl" href="/bingo">My Boards</a>
 				</div>
 			</div>
 		{:else}

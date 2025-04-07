@@ -26,9 +26,8 @@ export interface BingoState {
 	cols: number
 	seed: number
 	data: ListItem[]
+	companionEmails?: string[]
 	owner: string
-	user1Token?: string
-	user2Token?: string
 }
 
 type FlyAndScaleParams = {
